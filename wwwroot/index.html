@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Stats</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .title {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .title h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .connection-status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .player-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .player-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .health-bar-container {
+            background: #f0f0f0;
+            border-radius: 4px;
+            height: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .health-bar {
+            background: #4caf50;
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .health-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: #333;
+            font-size: 12px;
+            line-height: 20px;
+            font-weight: 500;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .damage {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .time-value {
+            color: #2196f3;
+        }
+
+        .cooldown-container {
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+
+        .cooldown-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #2196f3 var(--progress),
+                #f0f0f0 var(--progress)
+            );
+            transition: --progress 0.3s ease;
+        }
+
+        .cooldown-center {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: calc(100% - 4px);
+            height: calc(100% - 4px);
+            background: white;
+            border-radius: 50%;
+        }
+
+        .stat-group {
+            border-top: 1px solid #f0f0f0;
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+
+        .stat-group:first-child {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <h1>Player Stats</h1>
+            <div class="connection-status" id="status">Connecting...</div>
+        </div>
+        <div class="cards-container" id="cards"></div>
+    </div>
+
+    <script>
+        const statusElement = document.getElementById('status');
+        const cardsContainer = document.getElementById('cards');
+        
+        function formatSeconds(seconds) {
+            return seconds.toFixed(2) + 's';
+        }
+
+        function createCooldownIndicator(current, max) {
+            const progress = Math.max(0, Math.min(1, 1 - (current / max))) * 360;
+            return `
+                <div class="cooldown-container">
+                    <div class="cooldown-ring" style="--progress: ${progress}deg"></div>
+                    <div class="cooldown-center"></div>
+                </div>
+            `;
+        }
+
+        function updateOrCreateCard(playerData) {
+            let card = document.getElementById(`player-${playerData.player}`);
+            
+            if (!card) {
+                card = document.createElement('div');
+                card.id = `player-${playerData.player}`;
+                card.className = 'player-card';
+                cardsContainer.appendChild(card);
+            }
+
+            card.innerHTML = `
+                <div class="player-name">${playerData.player}</div>
+                <div class="health-bar-container">
+                    <div class="health-bar" style="width: ${(playerData.health / playerData.max_health) * 100}%"></div>
+                    <div class="health-text">${playerData.health.toFixed(0)} / ${playerData.max_health.toFixed(0)}</div>
+                </div>
+                
+                <div class="stat-group">
+                    <div class="stat">
+                        <span class="stat-label">Damage:</span>
+                        <span class="stat-value damage">${playerData.damage.toFixed(1)}</span>
+                    </div>
+                </div>
+
+                <div class="stat-group">
+                    <div class="stat">
+                        <span class="stat-label">Block:</span>
+                        <span class="stat-value">
+                            <span class="time-value">${formatSeconds(playerData.block)}</span>
+                            ${createCooldownIndicator(playerData.block_cooldown, playerData.block)}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-group">
+                    <div class="stat">
+                        <span class="stat-label">Reload:</span>
+                        <span class="stat-value">
+                            <span class="time-value">${formatSeconds(playerData.reload)}</span>
+                            ${createCooldownIndicator(playerData.reload_cooldown, playerData.reload)}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-group">
+                    <div class="stat">
+                        <span class="stat-label">Attack Speed:</span>
+                        <span class="stat-value">
+                            <span class="time-value">${formatSeconds(playerData.attack_speed)}</span>
+                            ${createCooldownIndicator(playerData.attack_cooldown, playerData.attack_speed)}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function connect() {
+            const ws = new WebSocket('ws://localhost:8080');
+
+            ws.onopen = () => {
+                statusElement.textContent = 'Connected';
+                statusElement.style.color = '#4caf50';
+            };
+
+            ws.onclose = () => {
+                statusElement.textContent = 'Disconnected - Retrying in 5s...';
+                statusElement.style.color = '#f44336';
+                cardsContainer.innerHTML = '';
+                setTimeout(connect, 5000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const players = JSON.parse(event.data);
+                    if (Array.isArray(players)) {
+                        const currentPlayers = new Set(players.map(p => p.player));
+                        
+                        document.querySelectorAll('.player-card').forEach(card => {
+                            const playerId = card.id.replace('player-', '');
+                            if (!currentPlayers.has(playerId)) {
+                                card.remove();
+                            }
+                        });
+
+                        players.forEach(playerData => {
+                            updateOrCreateCard(playerData);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error processing message:', error);
+                }
+            };
+        }
+
+        connect();
+    </script>
+</body>
+</html>
