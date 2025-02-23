@@ -5,12 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Player Stats</title>
     <style>
+        :root {
+            /* Neumorphic effect strength - adjust this to control the overall effect */
+            --neomorph-strength: .5;
+
+            /* Light theme */
+            --background: #e0e5ec;
+            --text-color: #2d4263;
+            --card-background: #e0e5ec;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --accent-blue: #4a90e2;
+            --accent-red: #e24a4a;
+            --health-color: #4CAF50;
+            --health-bar-bg: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --background: #2d3436;
+            --text-color: #ecf0f1;
+            --card-background: #2d3436;
+            --shadow-light: #353b3d;
+            --shadow-dark: #252a2c;
+            --accent-blue: #5dade2;
+            --accent-red: #e74c3c;
+            --health-color: #2ecc71;
+            --health-bar-bg: rgba(255, 255, 255, 0.1);
+        }
+
         body {
             margin: 0;
             padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            color: #333;
+            background: var(--background);
+            color: var(--text-color);
+            min-height: 100vh;
         }
 
         .container {
@@ -18,142 +47,196 @@
             margin: 0 auto;
         }
 
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            background: var(--card-background);
+            box-shadow: 
+                calc(4px * var(--neomorph-strength)) calc(4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-dark),
+                calc(-4px * var(--neomorph-strength)) calc(-4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-light);
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:active {
+            box-shadow: inset 
+                calc(4px * var(--neomorph-strength)) calc(4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-dark),
+                inset calc(-4px * var(--neomorph-strength)) calc(-4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-light);
+        }
+
         .title {
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            padding: 25px;
+            border-radius: 20px;
+            background: var(--card-background);
+            box-shadow: 
+                calc(8px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) calc(15px * var(--neomorph-strength)) var(--shadow-dark),
+                calc(-8px * var(--neomorph-strength)) calc(-8px * var(--neomorph-strength)) calc(15px * var(--neomorph-strength)) var(--shadow-light);
+            margin-bottom: 30px;
         }
 
         .title h1 {
             margin: 0;
             font-size: 24px;
-            font-weight: 500;
+            font-weight: 600;
+            color: var(--text-color);
+            text-shadow: 
+                calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) var(--shadow-light);
         }
 
         .connection-status {
-            margin-top: 10px;
+            margin-top: 12px;
             font-size: 14px;
-            color: #666;
+            color: var(--text-color);
+            opacity: 0.8;
         }
 
         .cards-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
         }
 
         .player-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
+            background: var(--card-background);
+            border-radius: 20px;
+            box-shadow: 
+                calc(8px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) calc(15px * var(--neomorph-strength)) var(--shadow-dark),
+                calc(-8px * var(--neomorph-strength)) calc(-8px * var(--neomorph-strength)) calc(15px * var(--neomorph-strength)) var(--shadow-light);
+            padding: 25px;
         }
 
         .player-name {
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            text-shadow: 
+                calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) var(--shadow-light);
         }
 
         .health-bar-container {
-            background: #f0f0f0;
-            border-radius: 4px;
-            height: 20px;
-            margin-bottom: 20px;
             position: relative;
+            overflow: hidden;
+            background: var(--card-background);
+            border-radius: 10px;
+            height: 20px;
+            position: relative;
+            box-shadow: inset 
+                calc(4px * var(--neomorph-strength)) calc(4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-dark),
+                inset calc(-4px * var(--neomorph-strength)) calc(-4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-light);
+        }
+
+        .health-numbers {
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: center;
+            color: var(--text-color);
+            text-shadow: 
+                calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) var(--shadow-light);
         }
 
         .health-bar {
-            background: #4caf50;
+            background: var(--health-color);
             height: 100%;
-            border-radius: 4px;
+            border-radius: 10px;
             transition: width 0.3s ease;
+            box-shadow: 
+                calc(2px * var(--neomorph-strength)) calc(2px * var(--neomorph-strength)) calc(4px * var(--neomorph-strength)) rgba(0, 0, 0, 0.1);
         }
 
-        .health-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            color: #333;
-            font-size: 12px;
-            line-height: 20px;
-            font-weight: 500;
+        .stat-group {
+            padding: 20px;
+            margin: 15px -15px;
+            border-radius: 15px;
+            background: var(--card-background);
+            box-shadow: inset 
+                calc(4px * var(--neomorph-strength)) calc(4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-dark),
+                inset calc(-4px * var(--neomorph-strength)) calc(-4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-light);
         }
 
         .stat {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
             font-size: 14px;
+            color: var(--text-color);
         }
 
         .stat-label {
-            color: #666;
+            font-weight: 500;
+            opacity: 0.8;
+            text-shadow: 
+                calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) var(--shadow-light);
         }
 
         .stat-value {
-            font-weight: 500;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            text-shadow: 
+                calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) var(--shadow-light);
         }
 
         .damage {
-            color: #f44336;
-            font-weight: bold;
+            color: var(--accent-red);
+            text-shadow: 
+                calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) var(--shadow-light);
         }
 
         .time-value {
-            color: #2196f3;
+            color: var(--accent-blue);
+            text-shadow: 
+                calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) calc(1px * var(--neomorph-strength)) var(--shadow-light);
         }
 
         .cooldown-container {
             position: relative;
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            box-shadow: 
+                calc(4px * var(--neomorph-strength)) calc(4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-dark),
+                calc(-4px * var(--neomorph-strength)) calc(-4px * var(--neomorph-strength)) calc(8px * var(--neomorph-strength)) var(--shadow-light);
         }
 
         .cooldown-ring {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: calc(3px);
+            left: calc(3px);
+            width: calc(100% - calc(6px));
+            height: calc(100% - calc(6px));
             border-radius: 50%;
             background: conic-gradient(
-                #2196f3 var(--progress),
-                #f0f0f0 var(--progress)
+                var(--accent-blue) var(--progress),
+                rgba(184, 198, 219, calc(0.3)) var(--progress)
             );
             transition: --progress 0.3s ease;
         }
 
         .cooldown-center {
             position: absolute;
-            top: 2px;
-            left: 2px;
-            width: calc(100% - 4px);
-            height: calc(100% - 4px);
-            background: white;
+            top: calc(6px);
+            left: calc(6px);
+            width: calc(100% - calc(12px));
+            height: calc(100% - calc(12px));
+            background: var(--card-background);
             border-radius: 50%;
-        }
-
-        .stat-group {
-            border-top: 1px solid #f0f0f0;
-            padding-top: 12px;
-            margin-top: 12px;
-        }
-
-        .stat-group:first-child {
-            border-top: none;
-            padding-top: 0;
-            margin-top: 0;
+            box-shadow: inset 
+                calc(2px calc(2px) calc(4px) var(--shadow-dark),
+                inset calc(-2px) calc(-2px) calc(4px) var(--shadow-light);
         }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" id="theme-toggle">Toggle Dark Mode</button>
     <div class="container">
         <div class="title">
             <h1>Player Stats</h1>
@@ -163,6 +246,21 @@
     </div>
 
     <script>
+        // Theme handling
+        const themeToggle = document.getElementById('theme-toggle');
+        const root = document.documentElement;
+        
+        // Check for saved theme preference or default to light
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        root.setAttribute('data-theme', savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
         const statusElement = document.getElementById('status');
         const cardsContainer = document.getElementById('cards');
         
@@ -190,23 +288,27 @@
                 cardsContainer.appendChild(card);
             }
 
+            // Handle health bar calculation
+            const healthPercent = Math.max(0, Math.min(100, (playerData.health / playerData.max_health) * 100));
+            const healthColor = playerData.health < 0 ? 'var(--accent-red)' : 'var(--health-color)';
+            
             card.innerHTML = `
                 <div class="player-name">${playerData.player}</div>
                 <div class="health-bar-container">
-                    <div class="health-bar" style="width: ${(playerData.health / playerData.max_health) * 100}%"></div>
-                    <div class="health-text">${playerData.health.toFixed(0)} / ${playerData.max_health.toFixed(0)}</div>
+                    <div class="health-bar" style="width: ${healthPercent}%; background-color: ${healthColor}"></div>
+                    <div class="health-numbers">${Math.abs(playerData.health).toFixed(0)} / ${playerData.max_health.toFixed(0)}</div>
                 </div>
                 
                 <div class="stat-group">
                     <div class="stat">
-                        <span class="stat-label">Damage:</span>
+                        <span class="stat-label">Damage</span>
                         <span class="stat-value damage">${playerData.damage.toFixed(1)}</span>
                     </div>
                 </div>
 
                 <div class="stat-group">
                     <div class="stat">
-                        <span class="stat-label">Block:</span>
+                        <span class="stat-label">Block</span>
                         <span class="stat-value">
                             <span class="time-value">${formatSeconds(playerData.block)}</span>
                             ${createCooldownIndicator(playerData.block_cooldown, playerData.block)}
@@ -216,7 +318,7 @@
 
                 <div class="stat-group">
                     <div class="stat">
-                        <span class="stat-label">Reload:</span>
+                        <span class="stat-label">Reload</span>
                         <span class="stat-value">
                             <span class="time-value">${formatSeconds(playerData.reload)}</span>
                             ${createCooldownIndicator(playerData.reload_cooldown, playerData.reload)}
@@ -224,9 +326,9 @@
                     </div>
                 </div>
 
-                <div class="stat-group">
+                <div class="stat-group" style="margin-bottom: -15px;">
                     <div class="stat">
-                        <span class="stat-label">Attack Speed:</span>
+                        <span class="stat-label">Attack Speed</span>
                         <span class="stat-value">
                             <span class="time-value">${formatSeconds(playerData.attack_speed)}</span>
                             ${createCooldownIndicator(playerData.attack_cooldown, playerData.attack_speed)}
@@ -246,7 +348,7 @@
 
             ws.onclose = () => {
                 statusElement.textContent = 'Disconnected - Retrying in 5s...';
-                statusElement.style.color = '#f44336';
+                statusElement.style.color = '#e24a4a';
                 cardsContainer.innerHTML = '';
                 setTimeout(connect, 5000);
             };

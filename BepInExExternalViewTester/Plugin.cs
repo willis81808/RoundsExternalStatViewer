@@ -61,7 +61,7 @@ namespace BepInExExternalViewTester
 
             void Update()
             {
-                if (Players == null || Players.Count == 0) return;
+                if (Players == null || Players.Count == 0 || Time.timeScale == 0) return;
 
                 var stats = Players.Select(p => new PlayerStat(
                         $"[{p.playerID}] {p.data.view.Owner.NickName}", 
